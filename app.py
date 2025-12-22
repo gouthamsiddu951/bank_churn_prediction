@@ -56,16 +56,20 @@ def input_form():
     }
     return pd.DataFrame([sample])
 
+
 # Predict view (uses ensemble for better accuracy)
 if view == "Predict":
     st.subheader("Make a prediction")
     df = input_form()
-    threshold = st.slider("Decision threshold", 0.1, 0.9, 0.5, 0.01)
     if st.button("Predict with Ensemble"):
-        proba = ensemble_pipeline.predict_proba(df)[0, 1]
-        label = "Churn" if proba >= threshold else "Stay"
+        proba = ensemble_pipeline.predict_proba(df)[0, 1]  # churn probability
+        label = "Churn" if proba >= 0.5 else "Stay"        # fixed cutoff at 0.5
         st.metric("Churn probability", f"{proba:.2f}")
-        st.success(f"Prediction: {label}")
+        if label == "Churn":
+            st.error(f"🚨 Prediction: {label}")
+        else:
+            st.success(f"✅ Prediction: {label}")
+
 
 # Explain view (SHAP; uses XGB for compatibility)
 elif view == "Explain (SHAP)":

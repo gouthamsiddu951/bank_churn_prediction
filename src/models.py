@@ -33,3 +33,24 @@ def soft_voting_ensemble():
         ],
         voting="soft"
     )
+def build_xgb_pipeline():
+    from sklearn.compose import ColumnTransformer
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler, OneHotEncoder
+    from xgboost import XGBClassifier
+
+    numeric_features = ["CreditScore", "Age", "Tenure", "Balance", "EstimatedSalary"]
+    categorical_features = ["Geography", "Gender"]
+
+    preprocessor = ColumnTransformer([
+        ("num", StandardScaler(), numeric_features),
+        ("cat", Pipeline([("onehot", OneHotEncoder(handle_unknown="ignore"))]), categorical_features)
+    ])
+
+    model = XGBClassifier(use_label_encoder=False, eval_metric="logloss", random_state=42)
+
+    pipeline = Pipeline([
+        ("preproc", preprocessor),
+        ("model", model)
+    ])
+    return pipeline

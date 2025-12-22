@@ -5,7 +5,8 @@ from src.utils import save_artifacts
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-DATA_PATH = "data/Churn_Modelling.csv"
+DATA_PATH = r"C:/Users/gouth/OneDrive/Desktop/Major Project/bank_churn_prediction/data/Churn_Modelling.csv"
+
 # Save both models: XGB for SHAP explanations; Ensemble for production
 XGB_MODEL_PATH = "artifacts/xgb_pipeline.joblib"
 ENSEMBLE_MODEL_PATH = "artifacts/ensemble_pipeline.joblib"
