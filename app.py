@@ -30,6 +30,7 @@ view = st.sidebar.radio("View", ["Predict", "Explain (SHAP)", "Dashboard"])
 def input_form():
     col1, col2 = st.columns(2)
     with col1:
+        customer_id = st.number_input("Customer ID", min_value=1, value=123456)
         credit_score = st.number_input("Credit Score", min_value=300, max_value=900, value=600)
         geography = st.selectbox("Geography", ["France", "Spain", "Germany"])
         gender = st.selectbox("Gender", ["Male", "Female"])
@@ -43,17 +44,19 @@ def input_form():
         salary = st.number_input("Estimated Salary", min_value=0.0, value=50000.0, step=100.0)
 
     sample = {
-        "CreditScore": int(credit_score),
-        "Geography": geography,
-        "Gender": gender,
-        "Age": int(age),
-        "Tenure": int(tenure),
-        "Balance": float(balance),
-        "NumOfProducts": int(num_products),
-        "HasCrCard": int(has_card),
-        "IsActiveMember": int(is_active),
-        "EstimatedSalary": float(salary)
-    }
+    "CustomerId": int(customer_id),   # NEW
+    "CreditScore": int(credit_score),
+    "Geography": geography,
+    "Gender": gender,
+    "Age": int(age),
+    "Tenure": int(tenure),
+    "Balance": float(balance),
+    "NumOfProducts": int(num_products),
+    "HasCrCard": int(has_card),
+    "IsActiveMember": int(is_active),
+    "EstimatedSalary": float(salary)
+}
+
     return pd.DataFrame([sample])
 
 
@@ -62,7 +65,21 @@ if view == "Predict":
     st.subheader("Make a prediction")
     df = input_form()
     if st.button("Predict with Ensemble"):
-        proba = ensemble_pipeline.predict_proba(df)[0, 1]  # churn probability
+        customer_id = df["CustomerId"].values[0]
+
+        # Remove CustomerId before prediction
+        df_model = df.drop(columns=["CustomerId"])
+
+        proba = ensemble_pipeline.predict_proba(df_model)[0, 1]
+        label = "Churn" if proba >= 0.5 else "Stay"
+
+        st.metric("Churn probability", f"{proba:.2f}")
+        st.write(f"Customer ID: {customer_id}")
+
+        if label == "Churn":
+            st.error(f"🚨 Prediction: {label}")
+        else:
+            st.success(f"✅ Prediction: {label}")
         label = "Churn" if proba >= 0.5 else "Stay"        # fixed cutoff at 0.5
         st.metric("Churn probability", f"{proba:.2f}")
         if label == "Churn":
